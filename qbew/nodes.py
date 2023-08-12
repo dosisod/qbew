@@ -49,7 +49,6 @@ class Statement:
         raise NotImplementedError()
 
 
-@dataclass
 class Expression:
     type: Type
 
@@ -58,12 +57,23 @@ class Expression:
 
 
 @dataclass
-class IntExpression:
+class IntExpression(Expression):
     value: int
-    type: Type
+    type: Type = field(default_factory=WordType)
 
     def __str__(self) -> str:
         return str(self.value)
+
+
+@dataclass
+class StrExpression(Expression):
+    value: str
+    type: Type = field(default_factory=ByteType)
+
+    def __str__(self) -> str:
+        escaped = ascii(self.value).replace('"', r'\"')
+
+        return f'"{escaped[1:-1]}"'
 
 
 @dataclass
@@ -101,14 +111,33 @@ class Function:
         return f"{header}() {{\n{blocks}\n}}"
 
 
+@dataclass
+class Data:
+    name: str
+    items: list[Expression]
+
+    def __str__(self) -> str:
+        items = ", ".join(f"{expr.type} {expr}" for expr in self.items)
+
+        return f"data ${self.name} = {{ {items} }}"
+
+
 class Context:
     functions: list[Function]
+    data: list[Data]
 
     def __init__(self) -> None:
         self.functions = []
+        self.data = []
 
     def __str__(self) -> str:
-        return "\n".join(str(x) for x in self.functions)
+        data = "\n".join(str(x) for x in self.data)
+        funcs = "\n".join(str(x) for x in self.functions)
+
+        return f"{data}\n{funcs}"
 
     def add_func(self, func: Function) -> None:
         self.functions.append(func)
+
+    def add_data(self, data: Data) -> None:
+        self.data.append(data)
