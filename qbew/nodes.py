@@ -44,7 +44,7 @@ class HalfWordType(ExtendedType):
         return "h"
 
 
-class Statement:
+class Instruction:
     def __str__(self) -> str:
         raise NotImplementedError()
 
@@ -71,13 +71,17 @@ class StrExpression(Expression):
     type: Type = field(default_factory=ByteType)
 
     def __str__(self) -> str:
-        escaped = ascii(self.value).replace('"', r'\"')
+        escaped = (
+            ascii(self.value)[1:-1]
+                .replace('"', "\\x22")
+                .replace("\\'", "'")
+        )
 
-        return f'"{escaped[1:-1]}"'
+        return f'"{escaped}"'
 
 
 @dataclass
-class ReturnStatement(Statement):
+class ReturnInstruction(Instruction):
     expr: Expression
 
     def __str__(self) -> str:
@@ -87,7 +91,7 @@ class ReturnStatement(Statement):
 @dataclass
 class Block:
     name: str
-    stmts: list[Statement] = field(default_factory=list)
+    stmts: list[Instruction] = field(default_factory=list)
 
     def __str__(self) -> str:
         stmts = "\n".join(f"\t{stmt}" for stmt in self.stmts)
@@ -109,6 +113,37 @@ class Function:
         blocks = "\n".join(str(block) for block in self.blocks)
 
         return f"{header}() {{\n{blocks}\n}}"
+
+
+@dataclass
+class Register:
+    name: str
+    type: Type
+
+    def __str__(self) -> str:
+        return f"%{self.name} ={self.type}"
+
+
+@dataclass
+class CallArg:
+    type: Type
+    name: str
+
+    def __str__(self) -> str:
+        return f"{self.type} ${self.name}"
+
+
+@dataclass
+class CallInstruction(Instruction):
+    register: Register | None
+    value: str
+    args: list[CallArg] = field(default_factory=list)
+
+    def __str__(self) -> str:
+        reg = f"{self.register} " if self.register else ""
+        args = ", ".join(str(arg) for arg in self.args)
+
+        return f"{reg}call ${self.value}({args})"
 
 
 @dataclass
