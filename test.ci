@@ -1,0 +1,4 @@
+on git.push where event.branch is "main"
+
+make install
+make all

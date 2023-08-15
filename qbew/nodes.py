@@ -3,11 +3,15 @@ from dataclasses import dataclass, field
 
 class Type:
     def __str__(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
-class BaseType(Type): pass
-class ExtendedType(BaseType): pass
+class BaseType(Type):
+    pass
+
+
+class ExtendedType(BaseType):
+    pass
 
 
 class WordType(BaseType):
@@ -42,17 +46,17 @@ class HalfWordType(ExtendedType):
 
 class Instruction:
     def __str__(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class Expression:
     type: Type
 
     def __str__(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
-@dataclass
+@dataclass(frozen=True)
 class Int(Expression):
     value: int
     type: Type = field(default_factory=WordType)
@@ -61,7 +65,7 @@ class Int(Expression):
         return str(self.value)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Float(Expression):
     value: float
     type: Type = field(default_factory=DoubleType)
@@ -70,16 +74,14 @@ class Float(Expression):
         return f"{self.type}_{self.value}"
 
 
-@dataclass
+@dataclass(frozen=True)
 class String(Expression):
     value: str
     type: Type = field(default_factory=ByteType)
 
     def __str__(self) -> str:
         escaped = (
-            ascii(self.value)[1:-1]
-                .replace('"', "\\x22")
-                .replace("\\'", "'")
+            ascii(self.value)[1:-1].replace('"', "\\x22").replace("\\'", "'")
         )
 
         return f'"{escaped}"'
