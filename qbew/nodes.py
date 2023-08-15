@@ -7,6 +7,7 @@ class Type:
 
 
 class BaseType(Type): pass
+class ExtendedType(BaseType): pass
 
 
 class WordType(BaseType):
@@ -27,11 +28,6 @@ class SingleType(BaseType):
 class DoubleType(BaseType):
     def __str__(self) -> str:
         return "d"
-
-
-class ExtendedType(BaseType):
-    def __str__(self) -> str:
-        raise NotImplementedError()
 
 
 class ByteType(ExtendedType):
@@ -57,7 +53,7 @@ class Expression:
 
 
 @dataclass
-class IntExpression(Expression):
+class Int(Expression):
     value: int
     type: Type = field(default_factory=WordType)
 
@@ -66,16 +62,16 @@ class IntExpression(Expression):
 
 
 @dataclass
-class FloatExpression(Expression):
+class Float(Expression):
     value: float
-    type: Type = field(default_factory=DoubleType())
+    type: Type = field(default_factory=DoubleType)
 
     def __str__(self) -> str:
         return f"{self.type}_{self.value}"
 
 
 @dataclass
-class StrExpression(Expression):
+class String(Expression):
     value: str
     type: Type = field(default_factory=ByteType)
 
@@ -89,13 +85,13 @@ class StrExpression(Expression):
         return f'"{escaped}"'
 
 
-class HaltInstruction(Instruction):
+class Halt(Instruction):
     def __str__(self) -> str:
         return "hlt"
 
 
 @dataclass
-class ReturnInstruction(Instruction):
+class Return(Instruction):
     expr: Expression
 
     def __str__(self) -> str:
@@ -148,7 +144,7 @@ class CallArg:
 
 
 @dataclass
-class CallInstruction(Instruction):
+class Call(Instruction):
     register: Register | None
     value: str
     args: list[CallArg] = field(default_factory=list)
