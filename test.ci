@@ -1,4 +1,8 @@
 on git.push where event.branch is "main"
 
+run_on image python:3.10.12-alpine3.18
+
+shell apk add make
+
 make install
 make all
