@@ -60,6 +60,10 @@ def test_stringify_return() -> None:
     assert str(Return(Int(123))) == "ret 123"
 
 
+def test_stringify_void_return() -> None:
+    assert str(Return()) == "ret"
+
+
 def test_stringify_function() -> None:
     block = Block(
         name="start",
@@ -77,6 +81,23 @@ def test_stringify_function() -> None:
 export function w $f() {
 @start
 	ret 123
+}\
+"""
+
+    assert str(func) == expected
+
+
+def test_stringify_void() -> None:
+    func = Function(
+        name="f",
+        blocks=[Block(name="start", stmts=[Return()])],
+        export=True,
+    )
+
+    expected = """\
+export function $f() {
+@start
+	ret
 }\
 """
 
@@ -105,6 +126,12 @@ def test_stringify_data() -> None:
     )
 
     assert str(data) == 'data $str = { b "hello world" }'
+
+
+def test_stringify_call_without_register() -> None:
+    call = Call(register=None, value="puts", args=[CallArg(LongType(), "str")])
+
+    assert str(call) == "call $puts(l $str)"
 
 
 def test_hello_world() -> None:

@@ -94,10 +94,10 @@ class Halt(Instruction):
 
 @dataclass
 class Return(Instruction):
-    expr: Expression
+    expr: Expression | None = None
 
     def __str__(self) -> str:
-        return f"ret {self.expr}"
+        return f"ret {self.expr}" if self.expr else "ret"
 
 
 @dataclass
@@ -114,13 +114,15 @@ class Block:
 @dataclass
 class Function:
     name: str
-    rtype: Type
+    rtype: Type | None = None
     blocks: list[Block] = field(default_factory=list)
     export: bool = False
 
     def __str__(self) -> str:
         export = "export " if self.export else ""
-        header = f"{export}function {self.rtype} ${self.name}"
+        rtype = f" {self.rtype}" if self.rtype else ""
+
+        header = f"{export}function{rtype} ${self.name}"
 
         blocks = "\n".join(str(block) for block in self.blocks)
 
