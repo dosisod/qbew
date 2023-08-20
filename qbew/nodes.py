@@ -161,6 +161,24 @@ class Call(Instruction):
 
 
 @dataclass
+class Jump(Instruction):
+    block: Block
+
+    def __str__(self) -> str:
+        return f"jmp @{self.block.name}"
+
+
+@dataclass
+class Branch(Instruction):
+    condition: Expression
+    true: Block
+    false: Block
+
+    def __str__(self) -> str:
+        return f"jnz {self.condition}, @{self.true.name}, @{self.false.name}"
+
+
+@dataclass
 class Data:
     name: str
     items: list[Expression]

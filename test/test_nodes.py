@@ -1,5 +1,6 @@
 from qbew.nodes import (
     Block,
+    Branch,
     ByteType,
     Call,
     CallArg,
@@ -11,6 +12,7 @@ from qbew.nodes import (
     HalfWordType,
     Halt,
     Int,
+    Jump,
     LongType,
     Register,
     Return,
@@ -132,6 +134,18 @@ def test_stringify_call_without_register() -> None:
     call = Call(register=None, value="puts", args=[CallArg(LongType(), "str")])
 
     assert str(call) == "call $puts(l $str)"
+
+
+def test_stringify_jump() -> None:
+    jump = Jump(Block("x"))
+
+    assert str(jump) == "jmp @x"
+
+
+def test_stringify_branch() -> None:
+    branch = Branch(Int(1), Block("t"), Block("f"))
+
+    assert str(branch) == "jnz 1, @t, @f"
 
 
 def test_hello_world() -> None:
