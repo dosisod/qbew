@@ -132,10 +132,10 @@ class Function:
 @dataclass
 class Register:
     name: str
-    type: Type
+    type: Type | None = None
 
     def __str__(self) -> str:
-        return f"%{self.name} ={self.type}"
+        return f"%{self.name}"
 
 
 @dataclass
@@ -150,14 +150,29 @@ class CallArg:
 @dataclass
 class Call(Instruction):
     register: Register | None
-    value: str
+    value: Expression
     args: list[CallArg] = field(default_factory=list)
 
     def __str__(self) -> str:
-        reg = f"{self.register} " if self.register else ""
+        if self.register:
+            ty = self.register.type or self.value.type
+
+            register = f"{self.register} ={ty} "
+
+        else:
+            register = ""
+
         args = ", ".join(str(arg) for arg in self.args)
 
-        return f"{reg}call ${self.value}({args})"
+        return f"{register}call {self.value}({args})"
+
+
+@dataclass
+class Global(Expression):
+    name: str
+
+    def __str__(self) -> str:
+        return f"${self.name}"
 
 
 @dataclass
