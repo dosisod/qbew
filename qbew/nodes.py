@@ -1,9 +1,16 @@
 from dataclasses import dataclass, field
+from typing import Literal
 
 
 class Type:
     def __str__(self) -> str:
         raise NotImplementedError
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, Type) and type(o) == type(self)
+
+    def __hash__(self) -> int:
+        return hash(self.__class__)
 
 
 class BaseType(Type):
@@ -202,6 +209,43 @@ class Data:
         items = ", ".join(f"{expr.type} {expr}" for expr in self.items)
 
         return f"data ${self.name} = {{ {items} }}"
+
+
+@dataclass
+class Alloc:
+    register: Register
+    align: Literal[4, 8, 16]
+    bytes: int
+
+    def __str__(self) -> str:
+        return f"{self.register} =l alloc{self.align} {self.bytes}"
+
+
+@dataclass
+class Store:
+    expr: Expression
+    addr: Register | Global
+
+    def __str__(self) -> str:
+        return f"store{self.expr.type} {self.expr}, {self.addr}"
+
+
+@dataclass
+class Load:
+    register: Register
+    load_type: Type
+    addr: Register | Global
+    signed: bool = False
+
+    def __str__(self) -> str:
+        if self.load_type in (WordType(), HalfWordType(), ByteType()):
+            suffix = "s" if self.signed else "u"
+        else:
+            suffix = ""
+
+        ty = f"{suffix}{self.load_type}"
+
+        return f"{self.register} ={self.register.type} load{ty} {self.addr}"
 
 
 class Context:

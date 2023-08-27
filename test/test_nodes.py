@@ -1,4 +1,5 @@
 from qbew.nodes import (
+    Alloc,
     Block,
     Branch,
     ByteType,
@@ -14,11 +15,14 @@ from qbew.nodes import (
     Halt,
     Int,
     Jump,
+    Load,
     LongType,
     Register,
     Return,
     SingleType,
+    Store,
     String,
+    Type,
     WordType,
 )
 
@@ -161,6 +165,36 @@ def test_stringify_register() -> None:
     assert str(Register("r")) == "%r"
 
 
+def test_stringify_alloc() -> None:
+    alloc = Alloc(Register("r"), 4, 8)
+
+    assert str(alloc) == "%r =l alloc4 8"
+
+
+def test_stringify_store() -> None:
+    store = Store(Int(123), Register("r"))
+
+    assert str(store) == "storew 123, %r"
+
+
+def test_stringify_load() -> None:
+    l1 = Load(Register("l1", WordType()), WordType(), Global("x"))
+
+    assert str(l1) == "%l1 =w loaduw $x"
+
+    l2 = Load(Register("l2", WordType()), ByteType(), Global("x"))
+
+    assert str(l2) == "%l2 =w loadub $x"
+
+    l3 = Load(Register("l3", WordType()), ByteType(), Global("x"), signed=True)
+
+    assert str(l3) == "%l3 =w loadsb $x"
+
+    l4 = Load(Register("l4", DoubleType()), DoubleType(), Global("x"))
+
+    assert str(l4) == "%l4 =d loadd $x"
+
+
 def test_hello_world() -> None:
     ctx = Context()
 
@@ -199,3 +233,27 @@ export function w $main() {
 """
 
     assert str(ctx) == expected
+
+
+def test_hash_types() -> None:
+    # Same types should be equal
+    assert hash(WordType()) == hash(WordType())
+    assert hash(DoubleType()) == hash(DoubleType())
+
+    # Different types should be different
+    assert hash(WordType()) != hash(DoubleType())
+
+    # Subclasses should not be equal
+    assert hash(Type()) != hash(WordType())
+
+
+def test_type_equality() -> None:
+    # Same types should be equal
+    assert WordType() == WordType()
+    assert DoubleType() == DoubleType()
+
+    # Different types should be different
+    assert WordType() != DoubleType()
+
+    # Subclasses should not be equal
+    assert Type() != WordType()
