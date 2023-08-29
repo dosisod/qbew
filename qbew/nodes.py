@@ -114,8 +114,9 @@ class Block:
 
     def __str__(self) -> str:
         stmts = "\n".join(f"\t{stmt}" for stmt in self.stmts)
+        name = f"@{self.name}"
 
-        return f"@{self.name}\n{stmts}"
+        return f"{name}\n{stmts}" if stmts else name
 
 
 @dataclass

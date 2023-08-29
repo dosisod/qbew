@@ -257,3 +257,24 @@ def test_type_equality() -> None:
 
     # Subclasses should not be equal
     assert Type() != WordType()
+
+
+def test_stringify_empty_blocks() -> None:
+    func = Function(
+        "f",
+        rtype=None,
+        blocks=[
+            Block("b1"),
+            Block("b2", [Return()]),
+        ],
+    )
+
+    expected = """\
+function $f() {
+@b1
+@b2
+	ret
+}\
+"""
+
+    assert str(func) == expected
