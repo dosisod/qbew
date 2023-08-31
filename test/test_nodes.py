@@ -8,6 +8,7 @@ from qbew.nodes import (
     Context,
     Data,
     DoubleType,
+    ExportLinkage,
     Float,
     Function,
     Global,
@@ -19,9 +20,11 @@ from qbew.nodes import (
     LongType,
     Register,
     Return,
+    SectionLinkage,
     SingleType,
     Store,
     String,
+    ThreadLinkage,
     Type,
     WordType,
 )
@@ -81,7 +84,7 @@ def test_stringify_function() -> None:
         name="f",
         rtype=WordType(),
         blocks=[block],
-        export=True,
+        linkage=ExportLinkage(),
     )
 
     expected = """\
@@ -98,7 +101,7 @@ def test_stringify_void() -> None:
     func = Function(
         name="f",
         blocks=[Block(name="start", stmts=[Return()])],
-        export=True,
+        linkage=ExportLinkage(),
     )
 
     expected = """\
@@ -135,6 +138,24 @@ def test_stringify_data() -> None:
     assert str(data) == 'data $str = { b "hello world" }'
 
 
+def test_stringify_data_with_linkage() -> None:
+    thread = Data(
+        name="x",
+        items=[Int(123)],
+        linkage=ThreadLinkage(),
+    )
+
+    assert str(thread) == "thread data $x = { w 123 }"
+
+    section = Data(
+        name="x",
+        items=[Int(123)],
+        linkage=SectionLinkage(section=".bbs", flags="some_flag"),
+    )
+
+    assert str(section) == 'section ".bbs" "some_flag" data $x = { w 123 }'
+
+
 def test_stringify_call_without_register() -> None:
     call = Call(
         register=None,
@@ -159,6 +180,10 @@ def test_stringify_branch() -> None:
 
 def test_stringify_global() -> None:
     assert str(Global("f")) == "$f"
+
+
+def test_stringify_thread_global() -> None:
+    assert str(Global("f", thread=True)) == "thread $f"
 
 
 def test_stringify_register() -> None:
@@ -213,7 +238,7 @@ def test_hello_world() -> None:
         name="main",
         rtype=WordType(),
         blocks=[block],
-        export=True,
+        linkage=ExportLinkage(),
     )
 
     data = Data(

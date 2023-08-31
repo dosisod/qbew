@@ -119,18 +119,44 @@ class Block:
         return f"{name}\n{stmts}" if stmts else name
 
 
+class Linkage:
+    def __str__(self) -> str:
+        raise NotImplementedError
+
+
+class ExportLinkage(Linkage):
+    def __str__(self) -> str:
+        return "export"
+
+
+class ThreadLinkage(Linkage):
+    def __str__(self) -> str:
+        return "thread"
+
+
+@dataclass
+class SectionLinkage(Linkage):
+    section: str
+    flags: str | None = None
+
+    def __str__(self) -> str:
+        flags = f' "{self.flags}"' if self.flags else ""
+
+        return f'section "{self.section}"{flags}'
+
+
 @dataclass
 class Function:
     name: str
     rtype: Type | None = None
     blocks: list[Block] = field(default_factory=list)
-    export: bool = False
+    linkage: Linkage | None = None
 
     def __str__(self) -> str:
-        export = "export " if self.export else ""
+        linkage = f"{self.linkage} " if self.linkage else ""
         rtype = f" {self.rtype}" if self.rtype else ""
 
-        header = f"{export}function{rtype} ${self.name}"
+        header = f"{linkage}function{rtype} ${self.name}"
 
         blocks = "\n".join(str(block) for block in self.blocks)
 
@@ -178,9 +204,12 @@ class Call(Instruction):
 @dataclass
 class Global(Expression):
     name: str
+    thread: bool = False
 
     def __str__(self) -> str:
-        return f"${self.name}"
+        thread = "thread " if self.thread else ""
+
+        return f"{thread}${self.name}"
 
 
 @dataclass
@@ -205,11 +234,14 @@ class Branch(Instruction):
 class Data:
     name: str
     items: list[Expression]
+    linkage: Linkage | None = None
 
     def __str__(self) -> str:
         items = ", ".join(f"{expr.type} {expr}" for expr in self.items)
 
-        return f"data ${self.name} = {{ {items} }}"
+        linkage = f"{self.linkage} " if self.linkage else ""
+
+        return f"{linkage}data ${self.name} = {{ {items} }}"
 
 
 @dataclass
