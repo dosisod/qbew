@@ -27,6 +27,7 @@ from qbew.nodes import (
     ThreadLinkage,
     Type,
     WordType,
+    Zeros,
 )
 
 
@@ -258,6 +259,12 @@ export function w $main() {
 """
 
     assert str(ctx) == expected
+
+
+def test_stringify_zero_initializer() -> None:
+    data = Data("x", [Zeros(8)])
+
+    assert str(data) == "data $x = { z 8 }"
 
 
 def test_hash_types() -> None:

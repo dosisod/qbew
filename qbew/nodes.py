@@ -231,13 +231,26 @@ class Branch(Instruction):
 
 
 @dataclass
+class Zeros:
+    count: int
+
+    def __str__(self) -> str:
+        assert self.count > 0
+
+        return f"z {self.count}"
+
+
+@dataclass
 class Data:
     name: str
-    items: list[Expression]
+    items: list[Expression | Zeros]
     linkage: Linkage | None = None
 
     def __str__(self) -> str:
-        items = ", ".join(f"{expr.type} {expr}" for expr in self.items)
+        items = ", ".join(
+            str(expr) if isinstance(expr, Zeros) else f"{expr.type} {expr}"
+            for expr in self.items
+        )
 
         linkage = f"{self.linkage} " if self.linkage else ""
 
