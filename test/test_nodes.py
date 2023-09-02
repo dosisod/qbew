@@ -1,5 +1,6 @@
 from qbew.nodes import (
     Alloc,
+    Arg,
     Block,
     Branch,
     ByteType,
@@ -306,6 +307,28 @@ function $f() {
 @b1
 @b2
 	ret
+}\
+"""
+
+    assert str(func) == expected
+
+
+def test_stringify_func_arg() -> None:
+    arg = Arg(WordType(), "x")
+
+    assert str(arg) == "w %x"
+
+
+def test_stringify_variadic_func_arg() -> None:
+    func = Function(
+        "add",
+        rtype=WordType(),
+        args=[Arg(WordType(), "x"), ...],
+    )
+
+    expected = """\
+function w $add(w %x, ...) {
+
 }\
 """
 

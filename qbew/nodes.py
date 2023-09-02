@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from types import EllipsisType
 from typing import Literal
 
 
@@ -146,21 +147,34 @@ class SectionLinkage(Linkage):
 
 
 @dataclass
+class Arg:
+    type: Type
+    name: str
+
+    def __str__(self) -> str:
+        return f"{self.type} %{self.name}"
+
+
+@dataclass
 class Function:
     name: str
     rtype: Type | None = None
     blocks: list[Block] = field(default_factory=list)
     linkage: Linkage | None = None
+    args: list[Arg | EllipsisType] = field(default_factory=list)
 
     def __str__(self) -> str:
         linkage = f"{self.linkage} " if self.linkage else ""
         rtype = f" {self.rtype}" if self.rtype else ""
 
-        header = f"{linkage}function{rtype} ${self.name}"
+        args = ", ".join(
+            "..." if arg is ... else str(arg) for arg in self.args
+        )
+        header = f"{linkage}function{rtype} ${self.name}({args})"
 
         blocks = "\n".join(str(block) for block in self.blocks)
 
-        return f"{header}() {{\n{blocks}\n}}"
+        return f"{header} {{\n{blocks}\n}}"
 
 
 @dataclass
