@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from types import EllipsisType
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from types import EllipsisType
 
 
 class Type:
@@ -189,17 +193,17 @@ class Register:
 @dataclass
 class CallArg:
     type: Type
-    name: str
+    name: Register | Global
 
     def __str__(self) -> str:
-        return f"{self.type} ${self.name}"
+        return f"{self.type} {self.name}"
 
 
 @dataclass
 class Call(Instruction):
     register: Register | None
     value: Expression
-    args: list[CallArg] = field(default_factory=list)
+    args: list[CallArg | EllipsisType] = field(default_factory=list)
 
     def __str__(self) -> str:
         if self.register:
@@ -210,7 +214,9 @@ class Call(Instruction):
         else:
             register = ""
 
-        args = ", ".join(str(arg) for arg in self.args)
+        args = ", ".join(
+            "..." if arg is ... else str(arg) for arg in self.args
+        )
 
         return f"{register}call {self.value}({args})"
 

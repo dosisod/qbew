@@ -117,16 +117,29 @@ export function $f() {
 
 
 def test_stringify_call() -> None:
-    # This is a call to puts() that uses the global string "str" as an input.
-    # This should be made more explicit and expressive in the future.
-
     call = Call(
         register=Register("r", type=WordType()),
         value=Global("puts"),
-        args=[CallArg(LongType(), "str")],
+        args=[CallArg(LongType(), Global("str"))],
     )
 
     expected = "%r =w call $puts(l $str)"
+
+    assert str(call) == expected
+
+
+def test_stringify_variadic_call() -> None:
+    call = Call(
+        register=None,
+        value=Global("printf"),
+        args=[
+            CallArg(LongType(), Global("str")),
+            ...,
+            CallArg(WordType(), Register("x")),
+        ],
+    )
+
+    expected = "call $printf(l $str, ..., w %x)"
 
     assert str(call) == expected
 
@@ -162,7 +175,7 @@ def test_stringify_call_without_register() -> None:
     call = Call(
         register=None,
         value=Global("puts"),
-        args=[CallArg(LongType(), "str")],
+        args=[CallArg(LongType(), Global("str"))],
     )
 
     assert str(call) == "call $puts(l $str)"
@@ -231,7 +244,7 @@ def test_hello_world() -> None:
             Call(
                 register=Register("r", type=WordType()),
                 value=Global("puts"),
-                args=[CallArg(LongType(), "str")],
+                args=[CallArg(LongType(), Global("str"))],
             ),
         ],
     )
