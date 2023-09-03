@@ -46,8 +46,7 @@ line-length = 79
 color = true
 
 [tool.pytest.ini_options]
-addopts = "--cov=qbew --cov-report=html --cov-report=term-missing --cov-fail-under=100 --disable-warnings"
-asyncio_mode = "auto"
+addopts = "--cov=qbew --cov-report=html --cov-report=term-missing --cov-fail-under=100"
 testpaths = ["test"]
 
 [tool.ruff]
