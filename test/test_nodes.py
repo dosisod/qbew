@@ -1,4 +1,6 @@
 from qbew.nodes import (
+    Aggregate,
+    AggregateType,
     Alloc,
     Arg,
     Block,
@@ -19,6 +21,7 @@ from qbew.nodes import (
     Jump,
     Load,
     LongType,
+    OpaqueType,
     Register,
     Return,
     SectionLinkage,
@@ -346,3 +349,34 @@ function w $add(w %x, ...) {
 """
 
     assert str(func) == expected
+
+
+def test_stringify_aggregate() -> None:
+    nums = Aggregate(name="nums", items=[WordType(), LongType()], align=4)
+
+    assert str(nums) == "type :nums = align 4 { w, l }"
+
+
+def test_stringify_aggregate_no_alignment() -> None:
+    nums = Aggregate(name="nums", items=[WordType(), LongType()])
+
+    assert str(nums) == "type :nums = { w, l }"
+
+
+def test_stringify_opaque_type() -> None:
+    nums = OpaqueType(name="ptr", size=8, align=16)
+
+    assert str(nums) == "type :ptr = align 16 { 8 }"
+
+
+def test_stringify_align_type() -> None:
+    assert str(AggregateType("x")) == ":x"
+
+
+def test_stringify_aggregate_in_context() -> None:
+    ctx = Context()
+
+    agg = Aggregate("t", [WordType()])
+    ctx.add_aggregate(agg)
+
+    assert str(ctx) == "type :t = { w }"

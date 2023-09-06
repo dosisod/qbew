@@ -56,6 +56,14 @@ class HalfWordType(ExtendedType):
         return "h"
 
 
+class AggregateType(Type):
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def __str__(self) -> str:
+        return f":{self.name}"
+
+
 class Instruction:
     def __str__(self) -> str:
         raise NotImplementedError
@@ -314,22 +322,53 @@ class Load:
         return f"{self.register} ={self.register.type} load{ty} {self.addr}"
 
 
-class Context:
-    functions: list[Function]
-    data: list[Data]
+class AggregateBase:
+    pass
 
-    def __init__(self) -> None:
-        self.functions = []
-        self.data = []
+
+@dataclass
+class Aggregate(AggregateBase):
+    name: str
+    items: list[Type]
+    align: int | None = None
 
     def __str__(self) -> str:
-        data = "\n".join(str(x) for x in self.data)
-        funcs = "\n".join(str(x) for x in self.functions)
+        items = ", ".join(str(item) for item in self.items)
+        align = f" align {self.align}" if self.align else ""
 
-        return f"{data}\n{funcs}"
+        return f"type :{self.name} ={align} {{ {items} }}"
 
-    def add_func(self, func: Function) -> None:
-        self.functions.append(func)
+
+@dataclass
+class OpaqueType(AggregateBase):
+    name: str
+    size: int
+    align: int
+
+    def __str__(self) -> str:
+        return f"type :{self.name} = align {self.align} {{ {self.size} }}"
+
+
+class Context:
+    aggregates: list[Aggregate]
+    data: list[Data]
+    functions: list[Function]
+
+    def __init__(self) -> None:
+        self.aggregates = []
+        self.data = []
+        self.functions = []
+
+    def __str__(self) -> str:
+        return "\n".join(
+            str(x) for x in self.aggregates + self.data + self.functions
+        )
+
+    def add_aggregate(self, aggregate: Aggregate) -> None:
+        self.aggregates.append(aggregate)
 
     def add_data(self, data: Data) -> None:
         self.data.append(data)
+
+    def add_func(self, func: Function) -> None:
+        self.functions.append(func)
