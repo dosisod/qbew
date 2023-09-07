@@ -8,6 +8,8 @@ from qbew.nodes import (
     ByteType,
     Call,
     CallArg,
+    Comparison,
+    ComparisonOper,
     Context,
     Data,
     DoubleType,
@@ -380,3 +382,37 @@ def test_stringify_aggregate_in_context() -> None:
     ctx.add_aggregate(agg)
 
     assert str(ctx) == "type :t = { w }"
+
+
+def test_stringify_comparison() -> None:
+    cmp = Comparison(
+        register=Register("r"),
+        op=ComparisonOper.EQUAL,
+        lhs=Int(1),
+        rhs=Int(2),
+    )
+
+    assert str(cmp) == "%r =w ceqw 1, 2"
+
+
+def test_stringify_comparison_with_explicit_instruction_type() -> None:
+    cmp = Comparison(
+        register=Register("r"),
+        op=ComparisonOper.EQUAL,
+        lhs=Global("x"),
+        rhs=Global("x"),
+        type=LongType(),
+    )
+
+    assert str(cmp) == "%r =w ceql $x, $x"
+
+
+def test_stringify_comparison_with_explicit_register_type() -> None:
+    cmp = Comparison(
+        register=Register("r", LongType()),
+        op=ComparisonOper.EQUAL,
+        lhs=Int(1),
+        rhs=Int(2),
+    )
+
+    assert str(cmp) == "%r =l ceqw 1, 2"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
@@ -118,6 +119,48 @@ class Return(Instruction):
 
     def __str__(self) -> str:
         return f"ret {self.expr}" if self.expr else "ret"
+
+
+class ComparisonOper(Enum):
+    # Integer and float ops
+    EQUAL = "eq"
+    NOT_EQUAL = "ne"
+
+    # Integer only ops
+    SIGNED_LESS_THAN_EQUAL = "sle"
+    SIGNED_LESS_THAN = "slt"
+    SIGNED_GREATER_THAN_EQUAL = "sge"
+    SIGNED_GREATER_THAN = "sgt"
+    UNSIGNED_LESS_THAN_EQUAL = "ule"
+    UNSIGNED_LESS_THAN = "ult"
+    UNSIGNED_GREATER_THAN_EQUAL = "uge"
+    UNSIGNED_GREATER_THAN = "ugt"
+
+    # Float only ops
+    LESS_THAN_EQUAL = "le"
+    LESS_THAN = "lt"
+    GREATER_THAN_EQUAL = "ge"
+    GREATER_THAN = "gt"
+    ORDERED = "o"
+    UNORDERED = "uo"
+
+
+@dataclass
+class Comparison(Instruction):
+    register: Register
+    op: ComparisonOper
+    lhs: Expression
+    rhs: Expression
+    type: Type | None = None
+
+    def __str__(self) -> str:
+        register_type = self.register.type or WordType()
+
+        op_type = self.type or self.lhs.type
+
+        inst = f"c{self.op.value}{op_type} {self.lhs}, {self.rhs}"
+
+        return f"{self.register} ={register_type} {inst}"
 
 
 @dataclass
