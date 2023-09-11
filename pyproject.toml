@@ -46,6 +46,9 @@ exclude_lines = [
 skip_covered = true
 skip_empty = true
 
+# TODO: add e2e tests for running QBE
+omit = ["qbew/run.py"]
+
 [tool.black]
 line-length = 79
 color = true
@@ -66,7 +69,10 @@ extend-ignore = [
   "B011",
   "D100", "D101", "D102", "D103", "D104", "D105", "D107",
   "D203", "D211", "D212", "D213",
+  "FIX002",
   "S101",
+  "S603", "S607",
+  "TD002", "TD003",
 ]
 
 [tool.ruff.per-file-ignores]
