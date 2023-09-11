@@ -1,16 +1,21 @@
-[tool.poetry]
+[project]
 name = "qbew"
 version = "0.0.0"
 description = "A Python wrapper for QBE"
-authors = ["dosisod"]
-license = "GPL-3.0-only"
+authors = [{name = "dosisod"}]
+license = {text = "GPL-3.0-only"}
 readme = "README.md"
-repository = "https://github.com/dosisod/qbew"
 classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Typing :: Typed"
 ]
+
+[project.urls]
+Repository = "https://github.com/dosisod/qbew"
+
+[tool.setuptools]
+packages = ["qbew"]
 
 [tool.isort]
 multi_line_output = 3
