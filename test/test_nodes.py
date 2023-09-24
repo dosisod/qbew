@@ -176,6 +176,16 @@ def test_stringify_data_with_linkage() -> None:
     assert str(section) == 'section ".bbs" "some_flag" data $x = { w 123 }'
 
 
+def test_stringify_with_alignment() -> None:
+    data = Data(
+        name="str",
+        items=[String("hello world")],
+        align=8,
+    )
+
+    assert str(data) == 'data $str = align 8 { b "hello world" }'
+
+
 def test_stringify_call_without_register() -> None:
     call = Call(
         register=None,

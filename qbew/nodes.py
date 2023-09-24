@@ -316,6 +316,7 @@ class Data:
     name: str
     items: list[Expression | Zeros]
     linkage: Linkage | None = None
+    align: int | None = None
 
     def __str__(self) -> str:
         items = ", ".join(
@@ -325,7 +326,9 @@ class Data:
 
         linkage = f"{self.linkage} " if self.linkage else ""
 
-        return f"{linkage}data ${self.name} = {{ {items} }}"
+        align = f"align {self.align} " if self.align else ""
+
+        return f"{linkage}data ${self.name} = {align}{{ {items} }}"
 
 
 @dataclass
