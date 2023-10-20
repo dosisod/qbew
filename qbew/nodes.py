@@ -358,7 +358,7 @@ class Load:
     signed: bool = False
 
     def __str__(self) -> str:
-        if self.load_type in (WordType(), HalfWordType(), ByteType()):
+        if self.load_type in {WordType(), HalfWordType(), ByteType()}:
             suffix = "s" if self.signed else "u"
         else:
             suffix = ""
