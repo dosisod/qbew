@@ -426,3 +426,29 @@ def test_stringify_comparison_with_explicit_register_type() -> None:
     )
 
     assert str(cmp) == "%r =l ceqw 1, 2"
+
+
+def test_stringify_function_with_debug_info() -> None:
+    block = Block(
+        name="start",
+        stmts=[Return(Int(0), line=1)],
+    )
+
+    func = Function(
+        name="main",
+        rtype=WordType(),
+        blocks=[block],
+        linkage=ExportLinkage(),
+        file="dbg_file.xyz",
+    )
+
+    expected = """\
+dbgfile "dbg_file.xyz"
+export function w $main() {
+@start
+	dbgloc 1
+	ret 0
+}\
+"""
+
+    assert str(func) == expected

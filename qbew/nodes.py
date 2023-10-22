@@ -5,6 +5,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from types import EllipsisType
 
 
@@ -65,9 +66,15 @@ class AggregateType(Type):
         return f":{self.name}"
 
 
+@dataclass
 class Instruction:
+    line: int = field(default=-1, kw_only=True)
+
     def __str__(self) -> str:
         raise NotImplementedError
+
+    def debug_info(self) -> str:
+        return f"dbgloc {self.line}\n\t" if self.line != -1 else ""
 
 
 class Expression:
@@ -110,7 +117,7 @@ class String(Expression):
 
 class Halt(Instruction):
     def __str__(self) -> str:
-        return "hlt"
+        return f"{self.debug_info()}hlt"
 
 
 @dataclass
@@ -118,7 +125,10 @@ class Return(Instruction):
     expr: Expression | None = None
 
     def __str__(self) -> str:
-        return f"ret {self.expr}" if self.expr else "ret"
+        dbg = self.debug_info()
+        ret = f"ret {self.expr}" if self.expr else "ret"
+
+        return f"{dbg}{ret}"
 
 
 class ComparisonOper(Enum):
@@ -154,13 +164,15 @@ class Comparison(Instruction):
     type: Type | None = None
 
     def __str__(self) -> str:
+        dbg = self.debug_info()
+
         register_type = self.register.type or WordType()
 
         op_type = self.type or self.lhs.type
 
         inst = f"c{self.op.value}{op_type} {self.lhs}, {self.rhs}"
 
-        return f"{self.register} ={register_type} {inst}"
+        return f"{dbg}{self.register} ={register_type} {inst}"
 
 
 @dataclass
@@ -217,15 +229,18 @@ class Function:
     blocks: list[Block] = field(default_factory=list)
     linkage: Linkage | None = None
     args: list[Arg | EllipsisType] = field(default_factory=list)
+    file: Path | str | None = None
 
     def __str__(self) -> str:
+        dbg = f'dbgfile "{self.file}"\n' if self.file else ""
         linkage = f"{self.linkage} " if self.linkage else ""
         rtype = f" {self.rtype}" if self.rtype else ""
 
         args = ", ".join(
             "..." if arg is ... else str(arg) for arg in self.args
         )
-        header = f"{linkage}function{rtype} ${self.name}({args})"
+
+        header = f"{dbg}{linkage}function{rtype} ${self.name}({args})"
 
         blocks = "\n".join(str(block) for block in self.blocks)
 
@@ -257,6 +272,8 @@ class Call(Instruction):
     args: list[CallArg | EllipsisType] = field(default_factory=list)
 
     def __str__(self) -> str:
+        dbg = self.debug_info()
+
         if self.register:
             ty = self.register.type or self.value.type
 
@@ -269,7 +286,7 @@ class Call(Instruction):
             "..." if arg is ... else str(arg) for arg in self.args
         )
 
-        return f"{register}call {self.value}({args})"
+        return f"{dbg}{register}call {self.value}({args})"
 
 
 @dataclass
@@ -288,7 +305,9 @@ class Jump(Instruction):
     block: Block
 
     def __str__(self) -> str:
-        return f"jmp @{self.block.name}"
+        dbg = self.debug_info()
+
+        return f"{dbg}jmp @{self.block.name}"
 
 
 @dataclass
@@ -298,7 +317,10 @@ class Branch(Instruction):
     false: Block
 
     def __str__(self) -> str:
-        return f"jnz {self.condition}, @{self.true.name}, @{self.false.name}"
+        dbg = self.debug_info()
+        br = f"jnz {self.condition}, @{self.true.name}, @{self.false.name}"
+
+        return f"{dbg}{br}"
 
 
 @dataclass
