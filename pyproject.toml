@@ -79,6 +79,7 @@ extend-ignore = [
 
 [tool.ruff.per-file-ignores]
 "qbew/*" = ["PT015"]
+"test/*" = ["FURB152"]
 
 [build-system]
 requires = ["setuptools"]
